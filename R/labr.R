@@ -1,0 +1,27 @@
+#' labr: Loglikelihood Adjustment for Beta Regression Models
+#'
+#' Based on the maximum likelihood estimation, the labr package performs adjusted
+#' inference for model objects fitted by the package
+#' \href{https://cran.r-project.org/package=betareg}{betareg}
+#' which models beta-distributed dependent variables such as proportions and rates.
+#'
+#' It provides an loglikelihood adjustment using a robust sandwich estimator
+#' of the parameter covariance matrix by the package
+#' \href{https://cran.r-project.org/package=chandwich}{chandwich}
+#' and the object-oriented features of the package
+#' \href{https://cran.r-project.org/package=sandwich}{sandwich}
+#' on a methodological basis in Chandler and Bate (2007).
+#'
+#' This adjustment method can be used to analyze cluster correlated
+#' data when focusing on the parameter of the marginal distributions,
+#' or by performing robust inferences to the misspecification of multiple
+#' types of models including beta regression model.
+#'
+#' @details
+#'
+#' See \code{vignette("labr-vignette", package = "labr")} for an overview of the
+#' package.
+#'
+#' @docType package
+#' @name labr
+NULL

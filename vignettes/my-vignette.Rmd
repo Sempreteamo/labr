@@ -1,0 +1,124 @@
+---
+title: "An overview of labr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An overview of labr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, include = FALSE}
+library(labr)
+library(betareg)
+library(chandwich)
+```
+
+## Loglikelihood adjustment using the alogLik function
+```{r}
+# Column 1 of GasolineYield contains proportion or crude oil converted
+data("GasolineYield", package = "betareg")
+gy <- betareg(yield ~ batch + temp, data = GasolineYield)
+
+# Adjusted the loglikelihood and standard errors
+adj_gy <- alogLik(gy)
+
+# MLE, SE and adjusted SE
+t(summary(adj_gy))
+#>         (Intercept) batch1 batch2 batch3 batch4 batch5 batch6 batch7 batch8
+#> MLE         -6.1600 1.7280 1.3230 1.5720 1.0600 1.1340 1.0400 0.5437 0.4959
+#> SE           0.1823 0.1012 0.1179 0.1161 0.1024 0.1035 0.1060 0.1091 0.1089
+#> adj. SE      0.2348 0.1390 0.1135 0.1246 0.1080 0.1066 0.1051 0.1188 0.1235
+
+#>         batch9      temp (phi)
+#> MLE     0.3858 0.0109700 440.3
+#> SE      0.1186 0.0004126 110.0
+#> adj. SE 0.1136 0.0005160 101.0
+```
+
+# Confidence intervals
+```{r}
+confint(adj_gy)
+#> Waiting for profiling to be done...
+#>                     2.5 %       97.5 %
+#> (Intercept)  -6.530973752  -5.97514764
+#> batch1        1.570763127   1.88185393
+#> batch2        1.291475540   1.35996001
+#> batch3        1.457597802   1.68873945
+#> batch4        0.983482349   1.14213522
+#> batch5        1.055285353   1.22408431
+#> batch6        0.973060423   1.11624812
+#> batch7        0.422439848   0.67569789
+#> batch8        0.370264567   0.65546741
+#> batch9        0.262332059   0.52306263
+#> temp          0.009960729   0.01198088
+#> (phi)       297.780510052 607.80325464
+```
+
+
+## Food expenditure data
+```{r}
+# Column 1 of 
+data("FoodExpenditure",package = "betareg")
+fe <- betareg(I(food/income) ~ income + persons, data = FoodExpenditure)
+
+# Adjusted the loglikelihood and standard errors
+adj_fe <- alogLik(fe)
+
+# MLE, SE and adjusted SE
+t(summary(adj_fe))
+#>         (Intercept)    income persons  (phi)
+#> MLE         -0.6225 -0.012300 0.11850 35.610
+#> SE           0.2239  0.003036 0.03534  8.080
+#> adj. SE      0.2118  0.002914 0.03747  7.953
+```
+
+# Confidence intervals
+```{r}
+confint(adj_fe)
+#> Waiting for profiling to be done...
+#>                   2.5 %       97.5 %
+#> (Intercept) -1.01639717 -0.179753808
+#> income      -0.01851651 -0.006817415
+#> persons      0.03939966  0.189790512
+#> (phi)       21.18662703 52.276991393
+
+confint(adj_fe, type = "none")
+#> Waiting for profiling to be done...
+#>                   2.5 %       97.5 %
+#> (Intercept) -1.06823934 -0.180696866
+#> income      -0.01848569 -0.006109799
+#> persons      0.04665035  0.189942543
+#> (phi)       22.12129751 53.884499963
+```
+
+# Confidence Regions
+```{r}
+which_pars <- c("income", "persons")
+
+gev_none <- conf_region(adj_fe, which_pars = which_pars, type = "none") 
+gev_vertical <- conf_region(adj_fe, which_pars = which_pars) 
+gev_cholesky <- conf_region(adj_fe, which_pars = which_pars, type = "cholesky")
+gev_spectral <- conf_region(adj_fe, which_pars = which_pars, type = "spectral")
+
+plot(gev_none, gev_vertical, gev_cholesky, gev_spectral, lwd = 2, xlim = c(-0.023, -0.0025), ylim = c(0, 0.25), cex = 0.8, col = c("deepskyblue", "gold", "greenyellow", "hotpink2"))
+```
+
+# Comaring nested models
+```{r}
+fe2 <- betareg(I(food/income) ~ income, data = FoodExpenditure)
+adj_fe2 <- alogLik(fe2)
+t(summary(adj_fe2))
+#>         (Intercept)    income  (phi)
+#> MLE         -0.2103 -0.011880 27.500
+#> SE           0.2044  0.003411  6.218
+#> adj. SE      0.2257  0.003420  5.764
+
+anova(adj_fe2, adj_fe)
+```
